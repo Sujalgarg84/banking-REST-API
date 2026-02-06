@@ -5,6 +5,7 @@ import net.sujalguides.banking_app.entity.Account;
 import net.sujalguides.banking_app.mapper.AccountMapper;
 import net.sujalguides.banking_app.repository.AccountRepository;
 import net.sujalguides.banking_app.service.AccountService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -33,5 +34,34 @@ public class AccountServiceImpl implements AccountService {
                 () -> new RuntimeException("Account does not exists"));
 
         return AccountMapper.mapToAccountAto(account);
+    }
+
+    @Override
+    public AccountDto deposit(Long id, double amount) {
+
+       Account account = accountRepository.findById(id).orElseThrow(
+               () -> new RuntimeException("Account does not exists."));
+
+       double total = account.getBalance() + amount;
+       account.setBalance(total);
+       Account savedAccount = accountRepository.save(account);
+       return AccountMapper.mapToAccountAto(savedAccount);
+    }
+
+    @Override
+    public AccountDto withdraw(Long id, double amount) {
+
+        Account account = accountRepository.findById(id).orElseThrow(
+                () -> new RuntimeException("Account not Exists"));
+
+        if(account.getBalance() < amount){
+            throw new RuntimeException("Insufficient amount");
+        }
+
+        double total = account.getBalance() - amount;
+        account.setBalance(total);
+        Account savedAccount = accountRepository.save(account);
+
+        return AccountMapper.mapToAccountAto(savedAccount);
     }
 }
